@@ -1,13 +1,13 @@
 import { Injectable } from '@angular/core';
 import {Observable} from 'rxjs';
-import {HttpClient} from '@angular/common/http';
+import {HttpClient, HttpHeaders} from '@angular/common/http';
 import {category} from '../types/entities';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CategoryService {
-  private apiUrl = 'https://your-api-url.com/categories';
+  private apiUrl = 'https://localhost:7293/api/category';
 
   constructor(private http: HttpClient) {}
 
@@ -16,6 +16,8 @@ export class CategoryService {
   }
 
   addCategory(name: string): Observable<any> {
-    return this.http.post(this.apiUrl, { name });
+    return this.http.post(this.apiUrl,  JSON.stringify(name), {
+      headers: new HttpHeaders({ 'Content-Type': 'application/json' })
+    });
   }
 }

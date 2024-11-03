@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
 import {ProductCardComponent} from '../product-card/product-card.component';
-import {product} from '../types/entities';
+import {currency, product} from '../types/entities';
 import {ProductsService} from './products.service';
 import {FormsModule} from '@angular/forms';
+import {ActivatedRoute} from '@angular/router';
 
 @Component({
   selector: 'app-products',
@@ -17,23 +18,29 @@ import {FormsModule} from '@angular/forms';
 export class ProductsComponent {
   products: product[] = [];
   showModal = false;
+  catId!: number;
 
   // Temporary new product details
   newProduct:product = {
     name: '',
     price: 0,
-    currency: '',
-    image: ''
+    currency: 0,
+    image: '',
+    description: '',
+    categoryId: 0
   };
 
-  constructor(private productsService: ProductsService) {}
+  constructor(private route: ActivatedRoute, private productsService: ProductsService) {}
 
   ngOnInit(): void {
-    this.fetchProducts();
+    this.route.paramMap.subscribe(params => {
+      this.catId = Number.parseInt(params.get('id')!);
+      this.fetchProducts(this.catId);
+    });
   }
 
-  fetchProducts(): void {
-    this.productsService.getProducts().subscribe(data => {
+  fetchProducts(catId: number): void {
+    this.productsService.getProducts(catId).subscribe(data => {
       this.products = data;
     });
   }
@@ -51,19 +58,20 @@ export class ProductsComponent {
     this.newProduct = {
       name: '',
       price: 0,
-      currency: '',
-      image: ''
+      currency: 0,
+      image: '',
+      description: '',
+      categoryId: this.catId
     };
   }
 
   onAddProduct(): void {
-    if (this.newProduct.name && this.newProduct.price > 0 && this.newProduct.currency && this.newProduct.image) {
-      this.products.push({ ...this.newProduct }); // Add the new product to the list
-      this.closePopup(); // Close the modal
-    }
+    this.newProduct.categoryId = this.catId;
     this.productsService.addProduct(this.newProduct).subscribe(() => {
-      this.fetchProducts();
+      this.fetchProducts(this.catId);
       this.closePopup();
     });
   }
+
+  protected readonly currency = currency;
 }
